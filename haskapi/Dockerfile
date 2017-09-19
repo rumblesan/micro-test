@@ -14,7 +14,9 @@ COPY test test
 RUN stack test
 RUN stack install --local-bin-path /opt/haskapi
 
-FROM haskell:8.0  
+FROM debian:jessie-slim
+
+RUN apt-get update && apt-get install -y libgmp-dev && apt-get clean
 
 RUN mkdir -p /opt/haskapi
 WORKDIR /opt/haskapi
