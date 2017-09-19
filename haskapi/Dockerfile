@@ -21,5 +21,9 @@ RUN apt-get update && apt-get install -y libgmp-dev && apt-get clean
 RUN mkdir -p /opt/haskapi
 WORKDIR /opt/haskapi
 
+RUN /usr/sbin/useradd haskapi
+RUN chown haskapi /opt/haskapi
+USER haskapi
+
 COPY --from=builder /opt/haskapi/haskapi .
 CMD ["./haskapi"]  
