@@ -1,0 +1,10 @@
+version: '3'
+services:
+  hask:
+    build: haskapi
+    ports:
+     - "8080:8080"
+  flask:
+    build: flaskapp
+    ports:
+     - "5000:5000"
