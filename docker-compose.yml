@@ -2,9 +2,11 @@ version: '3'
 services:
   hask:
     build: haskapi
+    image: rumblesan/micro-haskapi
     ports:
      - "8080:8080"
   flask:
     build: flaskapp
+    image: rumblesan/micro-flaskapp
     ports:
      - "5000:5000"
