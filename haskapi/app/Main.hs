@@ -1,28 +1,48 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
-import Web.Spock
-import Web.Spock.Config
+import           Web.Spock
+import           Web.Spock.Config
 
-import Control.Monad.Trans
-import Data.Monoid
-import Data.IORef
-import qualified Data.Text as T
+import           Codec.Picture
+import           Codec.Picture.Png
+import           Data.ByteString.Lazy
 
-data MySession = EmptySession
-data MyAppState = DummyAppState (IORef Int)
+import           RayCaster              (Config (..), Scene (..))
+import           RayCaster.Color        (Color (..))
+import           RayCaster.JsonSceneDef
+import           RayCaster.Render       (getCoordColor)
+
+type Api = SpockM () () () ()
+
+type ApiAction a = SpockAction () () () a
 
 main :: IO ()
-main =
-    do ref <- newIORef 0
-       spockCfg <- defaultSpockCfg EmptySession PCNoDatabase (DummyAppState ref)
-       runSpock 8080 (spock spockCfg app)
+main = do
+  spockCfg <- defaultSpockCfg () PCNoDatabase ()
+  runSpock 8080 (spock spockCfg app)
 
-app :: SpockM () MySession MyAppState ()
-app =
-    do get root $
-           text "Hello World!"
-       get ("hello" <//> var) $ \name ->
-           do (DummyAppState ref) <- getState
-              visitorNumber <- liftIO $ atomicModifyIORef' ref $ \i -> (i+1, i+1)
-              text ("Hello " <> name <> ", you are visitor number " <> T.pack (show visitorNumber))
+app :: Api
+app = do
+  get root $ text "Hello World!"
+  post "scene" $ do
+    scene <- jsonBody' :: ApiAction Scene
+    let img = renderImage scene
+    setHeader "Content-Type" "image/png"
+    lazyBytes img
+
+renderImage :: Scene -> ByteString
+renderImage scene@(Scene _ _ _ config) =
+  let width = sceneWidth config
+      height = sceneHeight config
+      img =
+        generateImage
+          (\x y -> pixelRGB8 $ getCoordColor scene x (height - y))
+          width
+          height
+  in encodePng img
+
+pixelRGB8 :: Color -> PixelRGB8
+pixelRGB8 (Color r g b) =
+  PixelRGB8 (truncate (r * 255)) (truncate (g * 255)) (truncate (b * 255))
