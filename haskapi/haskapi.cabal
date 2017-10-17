@@ -17,6 +17,7 @@ executable haskapi
                      , Spock >= 0.11
                      , mtl
                      , text
+                     , raycaster
 
 test-suite tests
   type:                exitcode-stdio-1.0
