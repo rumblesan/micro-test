@@ -8,7 +8,7 @@ import           Web.Spock.Config
 import           RayCaster              (Scene)
 import           RayCaster.JsonSceneDef
 
-import           Renderer               (renderPng)
+import           Renderer               (createCoords, renderPngPortion)
 
 type Api = SpockM () () () ()
 
@@ -23,7 +23,12 @@ app :: Api
 app = do
   get root $ text "Hello World!"
   post "scene" $ do
+    x1 <- param "x1"
+    y1 <- param "y1"
+    x2 <- param "x2"
+    y2 <- param "y2"
     scene <- jsonBody' :: ApiAction Scene
-    let img = renderPng scene
+    let coords = createCoords scene (x1, y1, x2, y2)
+    let img = renderPngPortion scene coords
     setHeader "Content-Type" "image/png"
     lazyBytes img
