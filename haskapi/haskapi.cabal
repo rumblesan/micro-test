@@ -20,6 +20,7 @@ executable haskapi
                      , mtl
                      , text
                      , raycaster
+  other-modules:       Renderer
 
 test-suite tests
   type:                exitcode-stdio-1.0
